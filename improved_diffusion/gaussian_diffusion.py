@@ -346,9 +346,9 @@ class GaussianDiffusion:
         """
         x0_mult = _extract_into_tensor(self.sqrt_alphas_cumprod, t, xt.shape)
         noise_mult = _extract_into_tensor(self.sqrt_one_minus_alphas_cumprod, t, xt.shape)
-        sigma_data = 1/2
+        sigma_data = 1.
         sigma = noise_mult / x0_mult
-        c_skip = sigma_data**2 / (sigma_data**2 + sigma**2)**0.5
+        c_skip = sigma_data**2 / (sigma_data**2 + sigma**2)
         c_out = sigma_data * sigma / (sigma_data**2 + sigma**2)**0.5
         x0_pred = c_skip * xt + c_out * output
         return x0_pred
@@ -792,13 +792,9 @@ class GaussianDiffusion:
             if nearest_timestep not in timesteps:
                 timesteps.append(nearest_timestep)
 
-        def get_latent_std(x, latent_indicator):
-            sqr = (x - x.mean())**2
-            avg_lat_sqr = sqr * latent_indicator / latent_indicator.mean()
-            return avg_lat_sqr.mean()**0.5
-
         def get_denoised_estimate(xt, t, s):
-            scaled_x = xt / (1 + s**2)**0.5
+            sigma_data = 1.
+            scaled_x = xt / (sigma_data + s**2)**0.5
             t = th.tensor([t] * shape[0], device=device)
             out = self.p_mean_variance(
                 model, scaled_x.to(th.float32), th.tensor(t).to(th.int32).view(-1).to(device),

@@ -69,7 +69,7 @@ class EDMSampler(ScheduleSampler):
     """
     UNSTABLE UNLESS USED WITH --predict_xstart=True
 
-    EDM suggests distributing log sigma (in VE proces) as N(-1.2, 1.2^2) in a continuous space
+    EDM suggests distributing log sigma (in VE process) as N(-1.2, 1.2^2) in a continuous space
 
     We will define a distribution over the discrete timesteps that gets as close as possible to this
 
@@ -93,7 +93,8 @@ class EDMSampler(ScheduleSampler):
         assert np.all(edm_log_sigma_probs >= 0) and np.sum(edm_log_sigma_probs) == 1
         self.timestep_sampling_probs = edm_log_sigma_probs
         # compute weighting for all sigmas
-        self.weights_array = (1 + sigmas ** 2) / sigmas ** 2
+        sigma_data = 1.
+        self.weights_array = (sigma_data ** 2 + sigmas ** 2) / (sigma_data * sigmas) ** 2
         wandb.log({
             'log_sigma/timesteps': wandb.Histogram(np_histogram=np.histogram(log_sigmas, bins=100)),
             'log_sigma/sampling_probs': wandb.Histogram(np_histogram=np.histogram(log_sigmas, weights=self.timestep_sampling_probs, bins=100)),
